@@ -23,8 +23,8 @@ COPY . .
 # Remove composer.lock to force fresh install
 RUN rm -f composer.lock
 
-# Install dependencies without lock file
-RUN composer install --no-interaction --optimize-autoloader --ignore-platform-reqs
+# Install dependencies WITHOUT running scripts (important!)
+RUN composer install --no-interaction --optimize-autoloader --ignore-platform-reqs --no-scripts
 
 # Set permissions for Laravel
 RUN mkdir -p storage/framework/{sessions,views,cache} \
