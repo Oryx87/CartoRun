@@ -7,7 +7,8 @@ RUN apt-get update && apt-get install -y \
     libzip-dev \
     zip \
     curl \
-    && docker-php-ext-install zip pdo pdo_mysql \
+    sqlite3 \
+    && docker-php-ext-install zip pdo pdo_mysql pdo_sqlite \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
@@ -30,7 +31,9 @@ RUN composer install --no-interaction --optimize-autoloader --ignore-platform-re
 RUN mkdir -p storage/framework/{sessions,views,cache} \
     && mkdir -p storage/logs \
     && mkdir -p bootstrap/cache \
-    && chmod -R 777 storage bootstrap/cache
+    && mkdir -p database \
+    && touch database/database.sqlite \
+    && chmod -R 777 storage bootstrap/cache database
 
 # Remove .env so Laravel reads environment variables from Render
 RUN rm -f .env
@@ -38,5 +41,20 @@ RUN rm -f .env
 # Expose port
 EXPOSE 8000
 
-# Start Laravel
-CMD php artisan serve --host=0.0.0.0 --port=8000
+# Run migrations and start Laravel
+CMD php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=8000
+```
+
+## Les changements importants :
+
+1. **Ajout de `sqlite3`** dans les dépendances système
+2. **Ajout de `pdo_sqlite`** dans les extensions PHP
+3. **Création du dossier `database/`** : `mkdir -p database`
+4. **Création du fichier SQLite** : `touch database/database.sqlite`
+5. **Permissions sur database/** : `chmod -R 777 ... database`
+6. **Migration automatique** : `php artisan migrate --force` dans le CMD
+
+## Sur Render, vérifie aussi la variable d'environnement :
+```
+DB_CONNECTION=sqlite
+DB_DATABASE=/app/database/database.sqlite
