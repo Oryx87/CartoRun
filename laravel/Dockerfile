@@ -18,10 +18,16 @@ WORKDIR /app
 COPY . .
 
 # Install dependencies
-RUN composer install --no-interaction --prefer-dist --optimize-autoloader
+RUN composer install --no-interaction --prefer-dist --optimize-autoloader --no-dev
+
+# Set permissions for Laravel
+RUN chmod -R 775 storage bootstrap/cache
+
+# Create .env from .env.example if it doesn't exist
+RUN if [ ! -f .env ]; then cp .env.example .env; fi
 
 # Expose port
 EXPOSE 8000
 
 # Start Laravel
-CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000"]
+CMD php artisan config:cache && php artisan route:cache && php artisan serve --host=0.0.0.0 --port=8000
