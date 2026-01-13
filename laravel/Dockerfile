@@ -5,12 +5,18 @@ RUN apt-get update && apt-get install -y \
     git \
     unzip \
     libzip-dev \
+    libsqlite3-dev \
     zip \
     curl \
     sqlite3 \
-    && docker-php-ext-install zip pdo pdo_mysql pdo_sqlite \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
+
+# Install PHP extensions one by one
+RUN docker-php-ext-install zip
+RUN docker-php-ext-install pdo
+RUN docker-php-ext-install pdo_mysql
+RUN docker-php-ext-install pdo_sqlite
 
 # Install Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
