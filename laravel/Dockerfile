@@ -23,7 +23,7 @@ COPY . .
 # Remove composer.lock to force fresh install
 RUN rm -f composer.lock
 
-# Install dependencies WITHOUT running scripts (important!)
+# Install dependencies WITHOUT running scripts
 RUN composer install --no-interaction --optimize-autoloader --ignore-platform-reqs --no-scripts
 
 # Set permissions for Laravel
@@ -32,8 +32,8 @@ RUN mkdir -p storage/framework/{sessions,views,cache} \
     && mkdir -p bootstrap/cache \
     && chmod -R 777 storage bootstrap/cache
 
-# Create .env if needed
-RUN if [ ! -f .env ]; then cp .env.example .env 2>/dev/null || echo "APP_KEY=" > .env; fi
+# Remove .env so Laravel reads environment variables from Render
+RUN rm -f .env
 
 # Expose port
 EXPOSE 8000
