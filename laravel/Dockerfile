@@ -27,9 +27,8 @@ COPY laravel/ .
 # Remove composer.lock to force fresh install
 RUN rm -f composer.lock
 
-# Install dependencies with more permissive flags
-RUN composer install --no-interaction --optimize-autoloader --no-dev --ignore-platform-reqs || \
-    composer install --no-interaction --no-dev --ignore-platform-reqs --no-scripts
+# Install dependencies - skip all scripts to avoid errors
+RUN composer install --no-interaction --no-dev --no-scripts --ignore-platform-reqs
 
 # Set permissions for Laravel
 RUN mkdir -p storage/framework/{sessions,views,cache} \
@@ -42,8 +41,9 @@ RUN mkdir -p storage/framework/{sessions,views,cache} \
 # Expose port
 EXPOSE ${PORT:-8000}
 
-# Start Laravel
-CMD php artisan key:generate --force && \
+# Start Laravel - create .env first
+CMD cp .env.example .env 2>/dev/null || echo "APP_KEY=" > .env && \
+    php artisan key:generate --force && \
     php artisan config:cache && \
     php artisan route:cache && \
     php artisan migrate --force && \
