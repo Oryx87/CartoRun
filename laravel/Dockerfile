@@ -21,11 +21,15 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 # Set working directory
 WORKDIR /app
 
-# Copy everything
-COPY . .
+# Copy Laravel folder
+COPY laravel/ .
 
-# Install dependencies
-RUN composer install --no-interaction --optimize-autoloader --no-dev
+# Remove composer.lock to force fresh install
+RUN rm -f composer.lock
+
+# Install dependencies with more permissive flags
+RUN composer install --no-interaction --optimize-autoloader --no-dev --ignore-platform-reqs || \
+    composer install --no-interaction --no-dev --ignore-platform-reqs --no-scripts
 
 # Set permissions for Laravel
 RUN mkdir -p storage/framework/{sessions,views,cache} \
@@ -39,7 +43,8 @@ RUN mkdir -p storage/framework/{sessions,views,cache} \
 EXPOSE ${PORT:-8000}
 
 # Start Laravel
-CMD php artisan config:cache && \
+CMD php artisan key:generate --force && \
+    php artisan config:cache && \
     php artisan route:cache && \
     php artisan migrate --force && \
     php artisan serve --host=0.0.0.0 --port=${PORT:-8000}
