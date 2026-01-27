@@ -41,9 +41,8 @@ RUN mkdir -p storage/framework/{sessions,views,cache} \
 # Expose port
 EXPOSE ${PORT:-8000}
 
-# Start Laravel - create .env first
+# Start Laravel - skip migrations due to errors
 CMD cp .env.example .env 2>/dev/null || echo "APP_KEY=" > .env && \
     php artisan key:generate --force && \
     php artisan config:cache && \
-    php artisan migrate --force && \
     php artisan serve --host=0.0.0.0 --port=${PORT:-8000}
